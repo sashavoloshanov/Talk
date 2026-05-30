@@ -41,6 +41,9 @@ final class LanguageClient {
         UserDefaultsClient.set(lang, for: .appLanguage)
         UserDefaults(suiteName: "group.com.talk.shared")?.set(lang.rawValue, forKey: "appLanguage")
         subject.send(lang)
-        WidgetCenter.shared.reloadAllTimelines()
+        Task {
+            await QuestionClient.shared.refreshWidgetData(for: lang)
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 }

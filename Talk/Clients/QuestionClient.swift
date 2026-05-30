@@ -42,6 +42,21 @@ actor QuestionClient {
 
     // MARK: - Widget sync
 
+    func refreshWidgetData(for language: AppLanguage) async {
+        let names = ["couple", "family", "friends"]
+        if let categories = try? names.map({ try loadCategory($0, language: language) }) {
+            let isPremium = UserDefaults(suiteName: "group.com.talk.shared")?.bool(forKey: "isPremium") ?? false
+            saveQuestionsForWidget(categories: categories, isPremium: isPremium)
+        }
+
+        if let url = try? fileURL(name: "daily", language: language),
+           let data = try? Data(contentsOf: url),
+           let payload = try? JSONDecoder().decode(DailyQuestionsPayload.self, from: data) {
+            let text = payload.holidayQuestion(for: .now) ?? payload.question(for: .now)
+            UserDefaults(suiteName: "group.com.talk.shared")?.set(text, forKey: "dailyQuestion")
+        }
+    }
+
     private func saveQuestionsForWidget(categories: [Category], isPremium: Bool) {
         let defaults = UserDefaults(suiteName: "group.com.talk.shared")
 
