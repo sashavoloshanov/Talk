@@ -36,6 +36,12 @@ struct LikedQuestionsView: View {
     }
 }
 
-#Preview {
-    LikedQuestionsView()
+#if DEBUG
+#Preview("Dark") {
+    PreviewContainer(scheme: .dark) { LikedQuestionsView() }
 }
+
+#Preview("Light") {
+    PreviewContainer(scheme: .light) { LikedQuestionsView() }
+}
+#endif
