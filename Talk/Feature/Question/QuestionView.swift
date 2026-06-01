@@ -33,7 +33,9 @@ struct QuestionView: View {
             Spacer()
  
             cardView
-                .frame(height: UIScreen.main.bounds.height * 0.5)
+                .containerRelativeFrame(.vertical) { size, _ in
+                    size * 0.5
+                }
  
             Spacer()
  
@@ -147,4 +149,3 @@ private let previewQuestions: [CardQuestion] = [
     }
 }
 #endif
-
