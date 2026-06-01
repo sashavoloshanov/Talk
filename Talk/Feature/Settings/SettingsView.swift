@@ -176,12 +176,10 @@ struct SettingsView: View {
 
 #if DEBUG
 #Preview("Dark") {
-    PreviewContainer { SettingsView() }
-        .preferredColorScheme(.dark)
+    PreviewContainer(scheme: .dark) { SettingsView() }
 }
 
 #Preview("Light") {
-    PreviewContainer { SettingsView() }
-        .preferredColorScheme(.light)
+    PreviewContainer(scheme: .light) { SettingsView() }
 }
 #endif

@@ -76,12 +76,10 @@ struct BadgesView: View {
 
 #if DEBUG
 #Preview("Dark") {
-    PreviewContainer { BadgesView() }
-        .preferredColorScheme(.dark)
+    PreviewContainer(scheme: .dark) { BadgesView() }
 }
 
 #Preview("Light") {
-    PreviewContainer { BadgesView() }
-        .preferredColorScheme(.light)
+    PreviewContainer(scheme: .light) { BadgesView() }
 }
 #endif

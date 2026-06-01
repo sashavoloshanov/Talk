@@ -136,17 +136,15 @@ private let previewQuestions: [CardQuestion] = [
 ]
 
 #Preview("Dark") {
-    PreviewContainer {
+    PreviewContainer(scheme: .dark) {
         QuestionView(questions: previewQuestions, subcategoryId: "test", title: "Test")
     }
-    .preferredColorScheme(.dark)
 }
 
 #Preview("Light") {
-    PreviewContainer {
+    PreviewContainer(scheme: .light) {
         QuestionView(questions: previewQuestions, subcategoryId: "test", title: "Test")
     }
-    .preferredColorScheme(.light)
 }
 #endif
 

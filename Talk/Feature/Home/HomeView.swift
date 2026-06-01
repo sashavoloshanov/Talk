@@ -95,12 +95,10 @@ struct HomeView: View {
 
 #if DEBUG
 #Preview("Dark") {
-    PreviewContainer { HomeView() }
-        .preferredColorScheme(.dark)
+    PreviewContainer(scheme: .dark) { HomeView() }
 }
 
 #Preview("Light") {
-    PreviewContainer { HomeView() }
-        .preferredColorScheme(.light)
+    PreviewContainer(scheme: .light) { HomeView() }
 }
 #endif
