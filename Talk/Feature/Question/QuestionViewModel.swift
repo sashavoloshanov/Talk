@@ -15,11 +15,15 @@ final class QuestionViewModel: BaseViewModel {
     var progressValue: Double { Double(currentIndex + 1) / Double(questions.count) }
     var isCurrentLiked: Bool { likesStore.likedIds.contains(current.id) }
 
-    init(questions: [CardQuestion], subcategoryId: String) {
+    init(questions: [CardQuestion], subcategoryId: String, forceStartIndex: Int? = nil) {
         self.questions = questions
         self.subcategoryId = subcategoryId
-        let progress = UserDefaultsClient.get([String: Int].self, for: .subcategoryProgress) ?? [:]
-        self.currentIndex = min(progress[subcategoryId] ?? 0, max(0, questions.count - 1))
+        if let forced = forceStartIndex {
+            self.currentIndex = min(forced, max(0, questions.count - 1))
+        } else {
+            let progress = UserDefaultsClient.get([String: Int].self, for: .subcategoryProgress) ?? [:]
+            self.currentIndex = min(progress[subcategoryId] ?? 0, max(0, questions.count - 1))
+        }
     }
 
     func next() {
