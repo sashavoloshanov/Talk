@@ -11,8 +11,8 @@ struct SmallWidgetView: View {
                     Image("applicationIcon")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 24, height: 24)
-                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                        .frame(width: 20, height: 20)
+                        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                     
                     Text("Talk")
                         .font(.caption)
@@ -21,10 +21,10 @@ struct SmallWidgetView: View {
                 }
                 
                 Text(text)
-                    .font(.caption)
+                    .font(.footnote)
                     .fontWeight(.medium)
-                    .lineLimit(6)
-                    .minimumScaleFactor(0.85)
+                    .lineLimit(7)
+                    .minimumScaleFactor(0.75)
             }
         }
         .padding()
