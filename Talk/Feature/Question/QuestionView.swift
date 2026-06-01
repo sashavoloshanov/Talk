@@ -49,6 +49,7 @@ struct QuestionView: View {
         .hideTabBar()
         .background(Colors.backgroundPrimary)
         .navigationBarHidden(true)
+        .task { await viewModel.loadState() }
     }
     
     private var navigationView: some View {
@@ -60,6 +61,7 @@ struct QuestionView: View {
                     ? (UIImage(systemName: "heart.fill") ?? UIImage())
                     : (UIImage(systemName: "heart") ?? UIImage()),
                 action: {
+                    guard viewModel.isStateLoaded else { return }
                     let wasLiked = viewModel.isCurrentLiked
                     let idx = viewModel.currentIndex
                     viewModel.toggleLike()

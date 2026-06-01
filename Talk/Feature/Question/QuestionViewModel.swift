@@ -1,12 +1,14 @@
 import Foundation
 import Observation
- 
+
 @Observable
 final class QuestionViewModel: BaseViewModel {
     let questions: [CardQuestion]
     let subcategoryId: String
     private(set) var currentIndex: Int
+    private(set) var isStateLoaded: Bool
     private let likesStore = LikesStore.shared
+    private let forceStartIndex: Int?
 
     var current: CardQuestion { questions[currentIndex] }
     var canGoNext: Bool { currentIndex < questions.count - 1 }
@@ -18,11 +20,23 @@ final class QuestionViewModel: BaseViewModel {
     init(questions: [CardQuestion], subcategoryId: String, forceStartIndex: Int? = nil) {
         self.questions = questions
         self.subcategoryId = subcategoryId
+        self.forceStartIndex = forceStartIndex
         if let forced = forceStartIndex {
             self.currentIndex = min(forced, max(0, questions.count - 1))
+            self.isStateLoaded = true
         } else {
-            let progress = UserDefaultsClient.get([String: Int].self, for: .subcategoryProgress) ?? [:]
-            self.currentIndex = min(progress[subcategoryId] ?? 0, max(0, questions.count - 1))
+            self.currentIndex = 0
+            self.isStateLoaded = false
+        }
+    }
+
+    func loadState() async {
+        guard !isStateLoaded else { return }
+        let progress = UserDefaultsClient.get([String: Int].self, for: .subcategoryProgress) ?? [:]
+        let savedIndex = min(progress[subcategoryId] ?? 0, max(0, questions.count - 1))
+        await MainActor.run {
+            currentIndex = savedIndex
+            isStateLoaded = true
         }
     }
 
@@ -44,13 +58,13 @@ final class QuestionViewModel: BaseViewModel {
         likesStore.toggle(current.id)
         incrementProgressCount()
     }
- 
+
     private func saveProgress() {
         var progress = UserDefaultsClient.get([String: Int].self, for: .subcategoryProgress) ?? [:]
         progress[subcategoryId] = currentIndex + 1
         UserDefaultsClient.set(progress, for: .subcategoryProgress)
     }
- 
+
     private func incrementProgressCount() {
         var progress = UserDefaultsClient.get([String: Int].self, for: .subcategoryProgress) ?? [:]
         let current = progress[subcategoryId] ?? 0
