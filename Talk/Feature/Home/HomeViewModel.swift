@@ -8,6 +8,10 @@ final class HomeViewModel: BaseViewModel {
         sub.isPremium && !isPremium
     }
 
+    func hasLikedQuestions(_ store: LikesStore) -> Bool {
+        !store.likedIds.isEmpty
+    }
+
     func loadContent(holder: QuestionClientHolder, language: AppLanguage, premiumClient: PremiumClient) async {
         do {
             try await holder.load(language: language, premiumClient: premiumClient)

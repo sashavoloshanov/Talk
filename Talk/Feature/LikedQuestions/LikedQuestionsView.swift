@@ -4,13 +4,15 @@ struct LikedQuestionsView: View {
     @Environment(AppCoordinator.self) private var coordinator
     @Environment(\.languageBundle) private var bundle
     @Environment(QuestionClientHolder.self) private var questionHolder
+    @Environment(LikesStore.self) private var likesStore
     @State private var viewModel = LikedQuestionsViewModel()
     @State private var likedStartIndex: Int = 0
     @State private var likedViewVersion: Int = 0
 
     var body: some View {
+        let questions = viewModel.questions(for: likesStore)
         VStack(spacing: 0) {
-            if viewModel.questions.isEmpty {
+            if questions.isEmpty {
                 NavigationBar(
                     leftButton: { coordinator.pop() },
                     centerContent: .text(String(localized: "liked_questions_title", bundle: bundle)),
@@ -24,7 +26,7 @@ struct LikedQuestionsView: View {
                 Spacer()
             } else {
                 QuestionView(
-                    questions: viewModel.questions,
+                    questions: questions,
                     subcategoryId: "liked",
                     title: String(localized: "liked_questions_title", bundle: bundle),
                     startIndex: likedStartIndex,
@@ -41,7 +43,7 @@ struct LikedQuestionsView: View {
     }
 
     private func handleUnlike(at index: Int) {
-        let newCount = viewModel.questions.count
+        let newCount = viewModel.questions(for: likesStore).count
         guard newCount > 0 else {
             coordinator.pop()
             return

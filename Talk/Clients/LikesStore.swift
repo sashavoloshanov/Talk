@@ -4,11 +4,9 @@ import Observation
 @MainActor
 @Observable
 final class LikesStore {
-    static let shared = LikesStore()
-
     private(set) var likedIds: Set<String>
 
-    private init() {
+    init() {
         let saved = UserDefaultsClient.get([String].self, for: .likedQuestions) ?? []
         likedIds = Set(saved)
     }
