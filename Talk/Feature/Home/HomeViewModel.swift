@@ -11,6 +11,7 @@ final class HomeViewModel: BaseViewModel {
     func loadContent(holder: QuestionClientHolder, language: AppLanguage, premiumClient: PremiumClient) async {
         do {
             try await holder.load(language: language, premiumClient: premiumClient)
+        } catch is CancellationError {
         } catch {
             errorMessage = error.localizedDescription
         }

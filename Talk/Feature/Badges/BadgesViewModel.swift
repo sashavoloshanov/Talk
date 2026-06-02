@@ -15,6 +15,7 @@ final class BadgesViewModel: BaseViewModel {
         do {
             try await holder.load(language: language, premiumClient: premiumClient)
             load(categories: holder.categories)
+        } catch is CancellationError {
         } catch {
             errorMessage = error.localizedDescription
         }
