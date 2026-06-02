@@ -7,6 +7,7 @@ struct PreviewContainer<Content: View>: View {
     @State private var themeClient: ThemeClient
     @State private var premiumClient = PremiumClient()
     @State private var coordinator = AppCoordinator()
+    @State private var likesStore = LikesStore()
 
     private let scheme: ColorScheme
     let content: () -> Content
@@ -36,6 +37,7 @@ struct PreviewContainer<Content: View>: View {
             .environment(premiumClient)
             .environment(coordinator)
             .environment(questionHolder)
+            .environment(likesStore)
             .preferredColorScheme(scheme)
     }
 }

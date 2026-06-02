@@ -7,7 +7,6 @@ final class QuestionViewModel: BaseViewModel {
     let subcategoryId: String
     private(set) var currentIndex: Int
     private(set) var isStateLoaded: Bool
-    private let likesStore = LikesStore.shared
     private let forceStartIndex: Int?
 
     var current: CardQuestion? {
@@ -18,7 +17,7 @@ final class QuestionViewModel: BaseViewModel {
     var canGoPrevious: Bool { currentIndex > 0 }
     var progress: String { "\(currentIndex + 1) / \(questions.count)" }
     var progressValue: Double { questions.isEmpty ? 0 : Double(currentIndex + 1) / Double(questions.count) }
-    var isCurrentLiked: Bool { current.map { likesStore.likedIds.contains($0.id) } ?? false }
+    func isCurrentLiked(in store: LikesStore) -> Bool { current.map { store.likedIds.contains($0.id) } ?? false }
 
     init(questions: [CardQuestion], subcategoryId: String, forceStartIndex: Int? = nil) {
         self.questions = questions
@@ -57,9 +56,9 @@ final class QuestionViewModel: BaseViewModel {
         #endif
     }
 
-    func toggleLike() {
+    func toggleLike(in store: LikesStore) {
         guard let q = current else { return }
-        likesStore.toggle(q.id)
+        store.toggle(q.id)
         incrementProgressCount()
     }
 

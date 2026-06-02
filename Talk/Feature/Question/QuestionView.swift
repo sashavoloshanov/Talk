@@ -10,6 +10,7 @@ struct QuestionView: View {
     @Environment(AppCoordinator.self) private var coordinator
     @Environment(LanguageClient.self) private var languageClient
     @Environment(\.languageBundle) private var bundle
+    @Environment(LikesStore.self) private var likesStore
 
     @State private var viewModel: QuestionViewModel
     @State private var dragOffset: CGFloat = 0
@@ -57,14 +58,14 @@ struct QuestionView: View {
             leftButton: { coordinator.pop() },
             centerContent: .text(title),
             rightButton: NavRightButton(
-                icon: viewModel.isCurrentLiked
+                icon: viewModel.isCurrentLiked(in: likesStore)
                     ? (UIImage(systemName: "heart.fill") ?? UIImage())
                     : (UIImage(systemName: "heart") ?? UIImage()),
                 action: {
                     guard viewModel.isStateLoaded else { return }
-                    let wasLiked = viewModel.isCurrentLiked
+                    let wasLiked = viewModel.isCurrentLiked(in: likesStore)
                     let idx = viewModel.currentIndex
-                    viewModel.toggleLike()
+                    viewModel.toggleLike(in: likesStore)
                     if wasLiked, let callback = onUnlikeAt {
                         callback(idx)
                     }

@@ -8,6 +8,7 @@ struct TalkApp: App {
     @State private var premiumClient = PremiumClient()
     @State private var coordinator = AppCoordinator()
     @State private var questionHolder = QuestionClientHolder()
+    @State private var likesStore = LikesStore()
 
     init() {
         MigrationClient.runIfNeeded()
@@ -27,6 +28,7 @@ struct TalkApp: App {
                     .environment(premiumClient)
                     .environment(coordinator)
                     .environment(questionHolder)
+                    .environment(likesStore)
                     .preferredColorScheme(themeClient.current.colorScheme)
             } else {
                 SplashView(state: splashState)
@@ -36,6 +38,7 @@ struct TalkApp: App {
                     .environment(premiumClient)
                     .environment(coordinator)
                     .environment(questionHolder)
+                    .environment(likesStore)
                     .preferredColorScheme(themeClient.current.colorScheme)
             }
         }

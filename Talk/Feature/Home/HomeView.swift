@@ -6,8 +6,8 @@ struct HomeView: View {
     @Environment(LanguageClient.self) private var languageClient
     @Environment(\.languageBundle) private var bundle
     @Environment(PremiumClient.self) private var premiumClient
+    @Environment(LikesStore.self) private var likesStore
     @State private var viewModel = HomeViewModel()
-    private let likesStore = LikesStore.shared
 
     var body: some View {
         VStack(spacing: 0) {
@@ -69,10 +69,10 @@ struct HomeView: View {
         NavigationBar(
             leftButton: nil,
             centerContent: .text("Talk"),
-            rightButton: likesStore.likedIds.isEmpty ? nil : NavRightButton(
+            rightButton: viewModel.hasLikedQuestions(likesStore) ? NavRightButton(
                 icon: UIImage(systemName: "heart.fill") ?? UIImage(),
                 action: { coordinator.push(.likedQuestions) }
-            )
+            ) : nil
         )
     }
     

@@ -3,11 +3,10 @@ import Observation
 
 @Observable
 final class LikedQuestionsViewModel: BaseViewModel {
-    private let likesStore = LikesStore.shared
     private var allCategories: [Category] = []
 
-    var questions: [CardQuestion] {
-        let ids = likesStore.likedIds
+    func questions(for store: LikesStore) -> [CardQuestion] {
+        let ids = store.likedIds
         var found: [CardQuestion] = []
         for category in allCategories {
             for sub in category.subcategories {
