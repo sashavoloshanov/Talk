@@ -9,21 +9,30 @@ final class QuestionClientHolder {
     private(set) var loadedLanguage: AppLanguage?
     private(set) var isLoading: Bool = false
 
+    private var loadingTask: Task<Void, Error>?
+
     func load(language: AppLanguage, premiumClient: PremiumClient) async throws {
         guard loadedLanguage != language, !isLoading else { return }
         isLoading = true
-        defer { isLoading = false }
-        async let cats = QuestionClient.shared.loadCategories(language: language)
-        async let daily = QuestionClient.shared.loadDailyQuestion(language: language)
-        async let _: () = premiumClient.checkPremiumStatus()
-        let (c, d) = try await (cats, daily)
-        self.categories = c
-        self.dailyQuestion = d
-        self.loadedLanguage = language
+        let task = Task {
+            defer { isLoading = false }
+            async let cats = QuestionClient.shared.loadCategories(language: language)
+            async let daily = QuestionClient.shared.loadDailyQuestion(language: language)
+            async let _: () = premiumClient.checkPremiumStatus()
+            let (c, d) = try await (cats, daily)
+            self.categories = c
+            self.dailyQuestion = d
+            self.loadedLanguage = language
+        }
+        loadingTask = task
+        try await task.value
     }
 
     func reload() {
+        loadingTask?.cancel()
+        loadingTask = nil
         loadedLanguage = nil
+        isLoading = false
     }
 }
 
