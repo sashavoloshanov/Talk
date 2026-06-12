@@ -1,4 +1,5 @@
 import Testing
+import Foundation
 @testable import Talk
 
 @Suite("QuestionClientHolder")
@@ -6,6 +7,7 @@ import Testing
 struct QuestionClientHolderTests {
 
     @Suite("load() — успіх")
+    @MainActor
     struct LoadSuccess {
         @Test func categoriesSetFromStub() async throws {
             let mock = MockQuestionClient()
@@ -43,6 +45,7 @@ struct QuestionClientHolderTests {
     }
 
     @Suite("Дедуплікація")
+    @MainActor
     struct Deduplication {
         @Test func loadSameLanguageTwiceCallsOnce() async throws {
             let mock = MockQuestionClient()
@@ -66,6 +69,7 @@ struct QuestionClientHolderTests {
     }
 
     @Suite("reload()")
+    @MainActor
     struct Reload {
         @Test func afterReloadLoadedLanguageIsNil() async throws {
             let mock = MockQuestionClient()
@@ -98,6 +102,7 @@ struct QuestionClientHolderTests {
     }
 
     @Suite("load() — помилка")
+    @MainActor
     struct LoadError {
         @Test func throwingClientThrows() async {
             let mock = MockQuestionClient()
@@ -130,7 +135,7 @@ struct QuestionClientHolderTests {
 }
 
 extension MockQuestionClient {
-    func setCategories(_ cats: [Category]) {
+    func setCategories(_ cats: [Talk.Category]) {
         stubbedCategories = cats
     }
 

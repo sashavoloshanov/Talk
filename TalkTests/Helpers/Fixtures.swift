@@ -20,13 +20,13 @@ extension Subcategory {
     }
 }
 
-extension Category {
+extension Talk.Category {
     static func fixture(
         id: String = "cat1",
         name: String = "Category",
         emoji: String = "🗂",
-        subcategories: [Subcategory] = [.fixture()]
-    ) -> Category {
-        Category(id: id, name: name, emoji: emoji, subcategories: subcategories)
+        subcategories: [Talk.Subcategory] = [.fixture()]
+    ) -> Talk.Category {
+        Talk.Category(id: id, name: name, emoji: emoji, subcategories: subcategories)
     }
 }

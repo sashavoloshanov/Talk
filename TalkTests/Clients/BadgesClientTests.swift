@@ -1,18 +1,19 @@
 import Testing
+import Foundation
 @testable import Talk
 
 @Suite("BadgesClient")
 struct BadgesClientTests {
 
     private let subcategoryId = "couple"
-    private var category: Category {
+    private var category: Talk.Category {
         .fixture(id: "cat1", subcategories: [.fixture(id: subcategoryId)])
     }
 
     @Suite("earned / locked за прогресом")
     struct EarnedLocked {
         let subId = "couple"
-        let category: Category = .fixture(id: "cat1", subcategories: [.fixture(id: "couple")])
+        let category: Talk.Category = .fixture(id: "cat1", subcategories: [.fixture(id: "couple")])
 
         private func badges(progress: Int) -> [Badge] {
             BadgesClient.badges(for: [category], progress: [subId: progress])["cat1"] ?? []
@@ -61,7 +62,7 @@ struct BadgesClientTests {
     @Suite("imageName")
     struct ImageName {
         let subId = "couple"
-        let category: Category = .fixture(id: "cat1", subcategories: [.fixture(id: "couple")])
+        let category: Talk.Category = .fixture(id: "cat1", subcategories: [.fixture(id: "couple")])
 
         @Test func earnedImageName() {
             let badges = BadgesClient.badges(for: [category], progress: [subId: 10])["cat1"] ?? []
@@ -78,7 +79,7 @@ struct BadgesClientTests {
     @Suite("badge.id")
     struct BadgeId {
         let subId = "couple"
-        let category: Category = .fixture(id: "cat1", subcategories: [.fixture(id: "couple")])
+        let category: Talk.Category = .fixture(id: "cat1", subcategories: [.fixture(id: "couple")])
 
         @Test func badgeIdsMatchFormat() {
             let badges = BadgesClient.badges(for: [category], progress: [:])["cat1"] ?? []
@@ -97,22 +98,22 @@ struct BadgesClientTests {
         }
 
         @Test func oneCategoryOneSubcategoryHas3Badges() {
-            let cat = Category.fixture(id: "cat1", subcategories: [.fixture(id: "sub1")])
+            let cat = Talk.Category.fixture(id: "cat1", subcategories: [.fixture(id: "sub1")])
             let result = BadgesClient.badges(for: [cat], progress: [:])
             #expect(result["cat1"]?.count == 3)
         }
 
         @Test func oneCategoryTwoSubcategoriesHas6Badges() {
-            let cat = Category.fixture(id: "cat1", subcategories: [.fixture(id: "sub1"), .fixture(id: "sub2")])
+            let cat = Talk.Category.fixture(id: "cat1", subcategories: [.fixture(id: "sub1"), .fixture(id: "sub2")])
             let result = BadgesClient.badges(for: [cat], progress: [:])
             #expect(result["cat1"]?.count == 6)
         }
 
         @Test func threeCategoriesHave3Keys() {
             let cats = [
-                Category.fixture(id: "cat1"),
-                Category.fixture(id: "cat2"),
-                Category.fixture(id: "cat3")
+                Talk.Category.fixture(id: "cat1"),
+                Talk.Category.fixture(id: "cat2"),
+                Talk.Category.fixture(id: "cat3")
             ]
             let result = BadgesClient.badges(for: cats, progress: [:])
             #expect(result.keys.count == 3)

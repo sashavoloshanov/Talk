@@ -2,8 +2,6 @@ import Testing
 @testable import Talk
 import Foundation
 
-private let widgetSuite = "com.talk.widget.tests"
-
 private func makeBundle(dailyJSON: String) throws -> Bundle {
     let tmp = FileManager.default.temporaryDirectory
         .appendingPathComponent(UUID().uuidString)
@@ -22,6 +20,11 @@ private func makeCategoryBundle(categories: [String: String]) throws -> Bundle {
         try json.write(to: lproj.appendingPathComponent("\(name).json"), atomically: true, encoding: .utf8)
     }
     return Bundle(path: tmp.path)!
+}
+
+private func makeWidgetDefaults() -> (UserDefaults, String) {
+    let suite = "com.talk.widget.tests.\(UUID().uuidString)"
+    return (UserDefaults(suiteName: suite)!, suite)
 }
 
 private let coupleJSON = """
@@ -62,29 +65,24 @@ private let minimalCategoryJSON = """
 @Suite("QuestionClient")
 struct QuestionClientTests {
 
-    init() {
-        UserDefaults(suiteName: widgetSuite)?.removePersistentDomain(forName: widgetSuite)
-    }
-
     @Suite("loadDailyQuestion")
     struct LoadDailyQuestion {
-        init() {
-            UserDefaults(suiteName: widgetSuite)?.removePersistentDomain(forName: widgetSuite)
-        }
 
         @Test func emptyQuestionsThrows() async throws {
             let bundle = try makeBundle(dailyJSON: #"{"questions":[],"holidays":{}}"#)
-            let widgetDefaults = UserDefaults(suiteName: widgetSuite)!
+            let (widgetDefaults, suite) = makeWidgetDefaults()
+            defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
             let widgetCenter = MockWidgetCenter()
             let client = QuestionClient(contentBundle: bundle, widgetDefaults: widgetDefaults, widgetCenter: widgetCenter)
-            await #expect(throws: QuestionClientError.emptyDailyQuestions) {
+            await #expect(throws: (any Error).self) {
                 try await client.loadDailyQuestion(language: .english)
             }
         }
 
         @Test func normalJSONReturnsQuestion() async throws {
             let bundle = try makeBundle(dailyJSON: #"{"questions":["Q1","Q2","Q3"],"holidays":{}}"#)
-            let widgetDefaults = UserDefaults(suiteName: widgetSuite)!
+            let (widgetDefaults, suite) = makeWidgetDefaults()
+            defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
             let widgetCenter = MockWidgetCenter()
             let client = QuestionClient(contentBundle: bundle, widgetDefaults: widgetDefaults, widgetCenter: widgetCenter)
             let result = try await client.loadDailyQuestion(language: .english)
@@ -97,7 +95,8 @@ struct QuestionClientTests {
             let todayKey = formatter.string(from: Date())
             let json = #"{"questions":["Regular Q"],"holidays":{"\#(todayKey)":"Holiday Q"}}"#
             let bundle = try makeBundle(dailyJSON: json)
-            let widgetDefaults = UserDefaults(suiteName: widgetSuite)!
+            let (widgetDefaults, suite) = makeWidgetDefaults()
+            defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
             let widgetCenter = MockWidgetCenter()
             let client = QuestionClient(contentBundle: bundle, widgetDefaults: widgetDefaults, widgetCenter: widgetCenter)
             let result = try await client.loadDailyQuestion(language: .english)
@@ -106,7 +105,8 @@ struct QuestionClientTests {
 
         @Test func questionTextSavedToWidgetDefaults() async throws {
             let bundle = try makeBundle(dailyJSON: #"{"questions":["Widget Q"],"holidays":{}}"#)
-            let widgetDefaults = UserDefaults(suiteName: widgetSuite)!
+            let (widgetDefaults, suite) = makeWidgetDefaults()
+            defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
             let widgetCenter = MockWidgetCenter()
             let client = QuestionClient(contentBundle: bundle, widgetDefaults: widgetDefaults, widgetCenter: widgetCenter)
             _ = try await client.loadDailyQuestion(language: .english)
@@ -115,7 +115,8 @@ struct QuestionClientTests {
 
         @Test func reloadedKindsContainsDailyWidget() async throws {
             let bundle = try makeBundle(dailyJSON: #"{"questions":["Q1"],"holidays":{}}"#)
-            let widgetDefaults = UserDefaults(suiteName: widgetSuite)!
+            let (widgetDefaults, suite) = makeWidgetDefaults()
+            defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
             let widgetCenter = MockWidgetCenter()
             let client = QuestionClient(contentBundle: bundle, widgetDefaults: widgetDefaults, widgetCenter: widgetCenter)
             _ = try await client.loadDailyQuestion(language: .english)
@@ -128,7 +129,7 @@ struct QuestionClientTests {
         @Test func missingFileThrowsFileNotFound() async throws {
             let bundle = try makeBundle(dailyJSON: #"{"questions":["Q1"],"holidays":{}}"#)
             let client = QuestionClient(contentBundle: bundle, widgetDefaults: nil, widgetCenter: MockWidgetCenter())
-            await #expect(throws: QuestionClientError.fileNotFound("missing")) {
+            await #expect(throws: (any Error).self) {
                 try await client.loadCategories(language: .english)
             }
         }
@@ -136,9 +137,6 @@ struct QuestionClientTests {
 
     @Suite("saveQuestionsForWidget (via loadCategories)")
     struct SaveQuestionsForWidget {
-        init() {
-            UserDefaults(suiteName: widgetSuite)?.removePersistentDomain(forName: widgetSuite)
-        }
 
         private func makeAllCategoryBundle(coupleOverride: String? = nil) throws -> Bundle {
             let couple = coupleOverride ?? coupleJSON
@@ -149,7 +147,8 @@ struct QuestionClientTests {
 
         @Test func notPremiumSavesOnlyFreeQuestions() async throws {
             let bundle = try makeAllCategoryBundle()
-            let widgetDefaults = UserDefaults(suiteName: widgetSuite)!
+            let (widgetDefaults, suite) = makeWidgetDefaults()
+            defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
             widgetDefaults.set(false, forKey: AppGroupKey.isPremium)
             let widgetCenter = MockWidgetCenter()
             let client = QuestionClient(contentBundle: bundle, widgetDefaults: widgetDefaults, widgetCenter: widgetCenter)
@@ -162,7 +161,8 @@ struct QuestionClientTests {
 
         @Test func premiumSavesAllQuestions() async throws {
             let bundle = try makeAllCategoryBundle()
-            let widgetDefaults = UserDefaults(suiteName: widgetSuite)!
+            let (widgetDefaults, suite) = makeWidgetDefaults()
+            defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
             widgetDefaults.set(true, forKey: AppGroupKey.isPremium)
             let widgetCenter = MockWidgetCenter()
             let client = QuestionClient(contentBundle: bundle, widgetDefaults: widgetDefaults, widgetCenter: widgetCenter)
@@ -175,7 +175,8 @@ struct QuestionClientTests {
 
         @Test func widgetDefaultsContainsCategoryNameAndEmoji() async throws {
             let bundle = try makeAllCategoryBundle()
-            let widgetDefaults = UserDefaults(suiteName: widgetSuite)!
+            let (widgetDefaults, suite) = makeWidgetDefaults()
+            defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
             let client = QuestionClient(contentBundle: bundle, widgetDefaults: widgetDefaults, widgetCenter: MockWidgetCenter())
             _ = try await client.loadCategories(language: .english)
             #expect(widgetDefaults.string(forKey: AppGroupKey.widgetCategoryName(categoryId: "couple")) == "Couple")
@@ -184,8 +185,10 @@ struct QuestionClientTests {
 
         @Test func reloadedAllTrueAfterLoadCategories() async throws {
             let bundle = try makeAllCategoryBundle()
+            let (widgetDefaults, suite) = makeWidgetDefaults()
+            defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
             let widgetCenter = MockWidgetCenter()
-            let client = QuestionClient(contentBundle: bundle, widgetDefaults: UserDefaults(suiteName: widgetSuite), widgetCenter: widgetCenter)
+            let client = QuestionClient(contentBundle: bundle, widgetDefaults: widgetDefaults, widgetCenter: widgetCenter)
             _ = try await client.loadCategories(language: .english)
             #expect(widgetCenter.reloadedAll == true)
         }

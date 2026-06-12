@@ -1,5 +1,7 @@
 import Testing
+import Foundation
 @testable import Talk
+internal import SwiftUI
 
 private func sampleBadge() -> Badge {
     Badge(id: "b1", subcategoryId: "sub1", subcategoryName: "Sub", isEarned: true, imageName: "badge_sub1_10", name: "Sub")

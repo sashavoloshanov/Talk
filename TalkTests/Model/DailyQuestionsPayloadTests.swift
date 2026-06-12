@@ -1,4 +1,5 @@
 import Testing
+import Foundation
 @testable import Talk
 
 private func date(month: Int, day: Int) -> Date {
