@@ -3,15 +3,13 @@ import SwiftUI
 struct BadgeRow: View {
     let badge: Badge
     let onTap: () -> Void
-    
+
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: 6) {
                 ZStack {
                     if badge.isEarned {
-                        Image(badge.imageName)
-                            .resizable()
-                            .scaledToFit()
+                        RemoteBadgeImage(imageName: badge.imageName)
                             .padding(8)
                     } else {
                         Image("lockedBadgeIcon")
