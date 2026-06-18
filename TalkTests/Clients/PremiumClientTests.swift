@@ -86,11 +86,11 @@ struct PremiumClientTests {
     @MainActor
     struct ProductIDs {
         @Test func monthlyProductIDIsCorrect() {
-            #expect(PremiumClient.monthlyProductID == "com.talkapp.premium.monthly")
+            #expect(PremiumClient.monthlyProductID == "com.voloshanov.talko.premium.monthly")
         }
 
         @Test func annualProductIDIsCorrect() {
-            #expect(PremiumClient.annualProductID == "com.talkapp.premium.annual")
+            #expect(PremiumClient.annualProductID == "com.voloshanov.talko.premium.annual")
         }
     }
 }
