@@ -24,6 +24,11 @@ struct RemoteBadgeImage: View {
         .task(id: imageName) {
             await load()
         }
+        .onAppear {
+            if case .failed = loadState {
+                Task { await load() }
+            }
+        }
     }
 
     private func load() async {
