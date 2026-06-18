@@ -48,6 +48,7 @@ Talk/
 │   ├── LanguageClient.swift    # Language selection & bundle switching
 │   ├── ThemeClient.swift       # Light / Dark theme + Combine publisher
 │   ├── BadgesClient.swift      # Badge calculation logic (pure function)
+│   ├── BadgeImageClient.swift  # Remote badge image download + disk/memory cache
 │   ├── UserDefaultsClient.swift# Typed UserDefaults wrapper
 │   └── StorageClient.swift     # Legacy storage helper
 ├── Model/
@@ -60,6 +61,9 @@ Talk/
 │   ├── Question/               # QuestionView + QuestionViewModel
 │   ├── LikedQuestions/         # LikedQuestionsView + LikedQuestionsViewModel
 │   ├── Badges/                 # BadgesView + BadgesViewModel + BadgeDetailView
+│   │   └── Components/
+│   │       ├── BadgeRow.swift          # Grid cell; earned → RemoteBadgeImage
+│   │       └── RemoteBadgeImage.swift  # Async image with loading/error states
 │   ├── Settings/               # SettingsView + SettingsViewModel
 │   ├── Subscription/           # SubscriptionView + SubscriptionViewModel
 │   └── Document/               # DocumentView — in-app HTML viewer (ToS, Privacy)
@@ -91,7 +95,7 @@ DailyQuestionWidget/
 - **SwiftUI** with `@Observable` (iOS 17 Observation framework) — no Combine in ViewModels. Combine is used only in `LanguageClient` (`languagePublisher`) and `ThemeClient` (`themePublisher`) where external observers need a publisher interface.
 - **Environment-driven DI** — all clients (`PremiumClient`, `LanguageClient`, `ThemeClient`, `QuestionClientHolder`) are injected via `.environment(...)` at the app root (`TalkApp`).
 - **Splash gate** — `TalkApp` checks `SplashState.isFinished` (`@Observable`) before switching from `SplashView` to `TabBarView`. All environment objects are injected into both views.
-- **Actor-isolated data layer** — `QuestionClient` is a Swift `actor` (`static let shared`) to guarantee thread-safe JSON loading.
+- **Actor-isolated data layer** — `QuestionClient` and `BadgeImageClient` are Swift `actor`s to guarantee thread-safe data access.
 - **Coordinator pattern** — `AppCoordinator` owns `NavigationPath`, `sheet`, and `fullScreenCover` state. Views call `coordinator.push()`, `coordinator.present()`, `coordinator.dismiss()`.
 - **BaseViewModel** — shared base class for `isLoading` and `errorMessage` state.
 
@@ -104,6 +108,7 @@ DailyQuestionWidget/
 | `LanguageClient` | Persists selected language; exposes `bundle` computed property and `languagePublisher` (Combine) for observers |
 | `ThemeClient` | Persists selected theme; exposes `themePublisher` (Combine); controls `preferredColorScheme` at app root |
 | `BadgesClient` | Pure static function — computes badge earned/locked state from subcategory progress in `UserDefaults` |
+| `BadgeImageClient` | Actor — downloads earned badge PNGs from `Talko-content` CDN, caches on disk (`Caches/BadgeImages/`) and in memory; deduplicates parallel requests |
 | `UserDefaultsClient` | Generic `Codable` read/write wrapper around `UserDefaults.standard` |
 | `SplashState` | `@Observable` class; `isFinished` gates the transition from `SplashView` to `TabBarView` |
 
@@ -111,7 +116,7 @@ DailyQuestionWidget/
 
 ## Content & Data
 
-All content lives in **JSON files inside localized `.lproj` bundles** — no backend, no network calls for content.
+All question content lives in **JSON files inside localized `.lproj` bundles** — no backend, no network calls for questions. Badge images are fetched remotely (see [Badges System](#badges-system)).
 
 ### Category JSON (`couple.json`, `family.json`, `friends.json`)
 
@@ -272,14 +277,22 @@ Accessed via `UserDefaultsClient` with typed `UDKey` enum:
 
 A badge is earned per subcategory at **10, 30, and 50** answered (liked or advanced-past) questions.
 
+### Badge image source
+
+Earned badge images are hosted in the public **`sashavoloshanov/Talko-content`** GitHub repository (`Badges/` folder, branch `main`) and served via jsDelivr CDN:
+
+```
+https://cdn.jsdelivr.net/gh/sashavoloshanov/Talko-content@main/Badges/{imageName}.png
+```
+
+`BadgeImageClient` (actor) downloads each image on first use, caches it on disk at `Caches/BadgeImages/`, and keeps it in memory for the session. Parallel requests for the same image are deduplicated via `inFlightTasks`. Badge images are **not** stored in the app's asset catalog (except `lockedBadgeIcon`).
+
 ### Badge image naming convention
 
 ```
-badge_{subcategoryId}_{threshold}   // earned
-lockedBadgeIcon                     // not yet earned
+badge_{subcategoryId}_{threshold}   // earned — fetched remotely by BadgeImageClient
+lockedBadgeIcon                     // not yet earned — local asset
 ```
-
-Add the corresponding image assets to the asset catalog when adding a new subcategory.
 
 ### Progress counting
 
@@ -373,8 +386,8 @@ When writing or editing question content:
 ### New subcategory
 
 1. Add the subcategory object to the relevant `{category}.json` in **both** `en.lproj/` and `uk.lproj/`.
-2. Add badge image assets: `badge_{subcategoryId}_10`, `badge_{subcategoryId}_30`, `badge_{subcategoryId}_50`.
-3. No code changes required — `BadgesClient` and `QuestionClient` pick it up automatically.
+2. Upload badge images to the `sashavoloshanov/Talko-content` repository under `Badges/`: `badge_{subcategoryId}_10.png`, `badge_{subcategoryId}_30.png`, `badge_{subcategoryId}_50.png`.
+3. No code changes required — `BadgesClient`, `BadgeImageClient`, and `QuestionClient` pick it up automatically.
 
 ### New category
 
