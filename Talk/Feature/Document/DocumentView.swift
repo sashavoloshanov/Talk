@@ -7,18 +7,24 @@ struct DocumentView: View {
     @Environment(AppCoordinator.self) private var coordinator
     @Environment(LanguageClient.self) private var languageClient
     @Environment(\.languageBundle) private var bundle
-    
-    private var title: String {
-        switch document {
-        case .privacyPolicy:
-            return String(localized: "settings_privacy", bundle: bundle)
-        case .termsOfService:
-            return String(localized: "settings_terms", bundle: bundle)
-        }
-    }
 
     var body: some View {
         VStack(spacing: 0) {
+            HStack {
+                Spacer()
+                Button {
+                    coordinator.dismissSheet()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(Colors.textSecondary)
+                        .frame(width: 32, height: 32)
+                        .background(Circle().fill(Color.white.opacity(0.1)))
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+            
             if let url = document.localURL(languageClient.current) {
                 LocalWebView(url: url)
                     .ignoresSafeArea(edges: .bottom)
