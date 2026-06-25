@@ -125,7 +125,7 @@ struct SettingsView: View {
     private var enteredSection: some View {
         Section {
             Button(String(localized: "settings_rate", bundle: bundle)) {
-                if let url = URL(string: "https://apps.apple.com/app/idYOUR_APP_ID") {
+                if let url = URL(string: "https://apps.apple.com/app/id6780755565") {
                     UIApplication.shared.open(url)
                 }
             }
